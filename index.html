@@ -112,7 +112,9 @@ a{color:inherit}
 .bar{position:relative;height:2px;background:rgba(255,240,220,.25);margin-top:12px;width:min(300px,100%)}
 .bar i{position:absolute;inset:0 auto 0 0;width:0;background:var(--cream)}
 .bar s{position:absolute;top:50%;width:7px;height:7px;border-radius:50%;background:var(--caramel);border:1.5px solid var(--cream);transform:translate(-50%,-50%)}
-.labels{display:flex;justify-content:space-between;width:min(300px,100%);margin-top:10px;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;opacity:.8}
+.labels{display:flex;justify-content:space-between;width:min(300px,100%);margin-top:10px;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase}
+.labels span{opacity:.7;transition:opacity .4s,color .4s}
+.labels span.on{opacity:1;color:var(--brass)}
 
 /* ---------- pack ---------- */
 .pack-pin{background:var(--paper);color:var(--ink)}
@@ -199,7 +201,7 @@ html.lenis,html.lenis body{height:auto}
 .cursor{width:6px;height:6px;background:#f2d6a2;margin:-3px 0 0 -3px}
 .cursor-ring{width:38px;height:38px;border:1px solid rgba(242,214,162,.8);margin:-19px 0 0 -19px;transition:width .35s,height .35s,margin .35s,background .35s}
 .cursor-ring.big{width:72px;height:72px;margin:-36px 0 0 -36px;background:rgba(242,214,162,.12)}
-@media (hover:none),(pointer:coarse){.cursor,.cursor-ring{display:none}}
+@media (hover:none),(pointer:coarse){.cursor,.cursor-ring{display:none}.grain{display:none}}
 .marquee{background:var(--espresso);color:var(--cream);overflow:hidden;padding-block:clamp(28px,5vw,56px);border-block:1px solid rgba(227,169,64,.18)}
 .mq-track{display:flex;width:max-content;will-change:transform}
 .mq-track span{font-family:var(--display);font-size:clamp(2.6rem,7vw,6.5rem);line-height:1;white-space:nowrap;padding-right:.5em}
@@ -233,8 +235,19 @@ html.lenis,html.lenis body{height:auto}
   .title-row{flex-direction:column;align-items:center;gap:0;top:calc(env(safe-area-inset-top,0px) + 76px);transform:none}
   .title-row span{font-size:clamp(3.8rem,20vw,6.4rem)}
   .photo{top:63%;height:min(66vh,112vw)}
-  .stage{height:78vh;bottom:0}
-  .ritual{top:calc(env(safe-area-inset-top,0px) + 92px);transform:none;width:auto;right:var(--gutter)}
+  .stage{bottom:0}
+  .ritual{top:calc(env(safe-area-inset-top,0px) + 84px);transform:none;width:auto;right:var(--gutter);z-index:6}
+  .ritual::before{content:"";position:absolute;inset:-84px calc(-1*var(--gutter)) -36px;z-index:-1;pointer-events:none;
+    background:linear-gradient(180deg,rgba(15,10,11,.96) 0%,rgba(15,10,11,.9) 72%,rgba(15,10,11,0) 100%)}
+  .stage{height:min(78vh,calc(100svh - 250px))}
+  .step{filter:none;transition:opacity .45s,transform .45s}
+  .bar,.labels{width:100%}
+  .bar{height:2px}
+  .bar s{width:9px;height:9px}
+  .labels{font-size:11px;letter-spacing:.18em;margin-top:12px;text-shadow:0 1px 6px rgba(0,0,0,.9)}
+  .labels span{opacity:.85}
+  .estep{filter:none;transition:opacity .45s,transform .45s}
+  .grain{display:none}
   .step h3{font-size:clamp(2rem,9vw,2.6rem)}
   .step h3 em{display:inline}
   .step p{margin-top:8px;font-size:13px}
@@ -339,15 +352,15 @@ html.lenis,html.lenis body{height:auto}
 
     <div class="ritual" id="ritual">
       <div class="steps">
-        <div class="step on"><h3>Poured in brass,<em>the old way.</em></h3><p>A tumbler and a dabara, both too hot to hold by the body. Brass keeps the coffee warm and the habit unchanged.</p></div>
-        <div class="step"><h3>First,<em>the lift.</em></h3><p>The tumbler rises above the dabara. The higher the pour, the finer the foam, so nobody rushes this part.</p></div>
-        <div class="step"><h3>Then the<em>long pour.</em></h3><p>One unbroken stream, close to an arm's length. It cools the coffee and folds the milk through the decoction.</p></div>
-        <div class="step"><h3>Foam,<em>then quiet.</em></h3><p>A soft crown settles on top. Drink it before the foam sinks back.</p></div>
+        <div class="step on"><h3>Poured in brass, <em>the old way.</em></h3><p>A tumbler and a dabara, both too hot to hold by the body. Brass keeps the coffee warm and the habit unchanged.</p></div>
+        <div class="step"><h3>First, <em>the lift.</em></h3><p>The tumbler rises above the dabara. The higher the pour, the finer the foam, so nobody rushes this part.</p></div>
+        <div class="step"><h3>Then the <em>long pour.</em></h3><p>One unbroken stream, close to an arm's length. It cools the coffee and folds the milk through the decoction.</p></div>
+        <div class="step"><h3>Foam, <em>then quiet.</em></h3><p>A soft crown settles on top. Drink it before the foam sinks back.</p></div>
       </div>
       <div class="prog">
         <div class="count"><span id="cnt">01</span> <small>/ 04</small></div>
         <div class="bar"><i id="barFill"></i><s style="left:0"></s><s style="left:33.3%"></s><s style="left:66.6%"></s><s style="left:100%"></s></div>
-        <div class="labels"><span>Brass</span><span>Lift</span><span>Pour</span><span>Foam</span></div>
+        <div class="labels" id="labels"><span class="on">Brass</span><span>Lift</span><span>Pour</span><span>Foam</span></div>
       </div>
     </div>
   </div>
@@ -484,7 +497,7 @@ const rgba=(c,a=1)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
 /* ---------- painted landscapes ---------- */
 function paint(cv,o){
   const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
-  const dpr=Math.min(devicePixelRatio||1,2);
+  const dpr=Math.min(devicePixelRatio||1,innerWidth>820?2:1.5);
   cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
   const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
   const R=rng(o.seed),s=Math.max(w,h*1.2)/1400;
@@ -612,102 +625,127 @@ function filmTime(q){
 }
 
 /* ---------- scroll engine ---------- */
-const P=el=>{const r=el.getBoundingClientRect(),t=r.height-innerHeight;return clamp(-r.top/t)};
-const hero=$('#hero'),brass=$('#brass'),pack=$('#pack'),estate=$('#estate');
+// Layout is measured once (and on real resizes), never inside the scroll loop.
+const hero=$('#hero'),brass=$('#brass'),pack=$('#pack'),estate=$('#estate'),footerEl=$('footer');
+const E={heroCv:$('#heroCv'),heroMark:$('#heroMark'),heroShade:$('#heroShade'),cue:$('#cue'),dark:$('#dark'),drips:$('#drips'),
+  titleL:$('#titleL'),photo:$('#photo'),stage:$('#stage'),ritual:$('#ritual'),ritBg:$('#ritBg'),cnt:$('#cnt'),barFill:$('#barFill'),
+  packHead:$('#packHead'),pouch:$('#pouch'),notesL:$('#notesL'),notesR:$('#notesR'),win:$('#win'),eTitle:$('#eTitle'),ecnt:$('#ecnt'),
+  esteps:$('#esteps'),ecount:$('#ecount'),badge:$('#badge'),floor:$('#floor'),estCv:$('#estCv'),warm:$('#warm'),badgeSvg:$('#badgeSvg'),
+  top:$('#top'),x1:$('#x1'),x2:$('#x2')};
+const labels=[...document.querySelectorAll('#labels span')],navLinks=[...document.querySelectorAll('.top nav a')];
+E.x1c=E.x1.querySelector('canvas');E.x2c=E.x2.querySelector('canvas');
+E.stage.style.transformOrigin='50% 100%';
+// write a style only when it changed: cuts most of the per-frame style work
+const SC=new WeakMap();
+function st(el,prop,val){let m=SC.get(el);if(!m){m={};SC.set(el,m)}if(m[prop]===val)return;m[prop]=val;el.style[prop]=val}
+const f3=v=>(+v).toFixed(3);
+let L={};
+function measure(){
+  const y=scrollY,box=el=>{const r=el.getBoundingClientRect();return{top:r.top+y,h:el.offsetHeight}};
+  L={W:innerWidth,H:innerHeight,hero:box(hero),brass:box(brass),pack:box(pack),estate:box(estate),foot:box(footerEl).top,
+     dripH:E.drips.getBoundingClientRect().height/(E.drips._sy||1)};
+}
+const prog=(sec,y)=>clamp((y-sec.top)/Math.max(1,sec.h-L.H));
+const near=(sec,y)=>y+L.H>sec.top-L.H*.5&&y<sec.top+sec.h+L.H*.5;
 
 const steps=[...document.querySelectorAll('.step')],esteps=[...document.querySelectorAll('.estep')];
-// tumbler path in stage % (centre x, centre y, rotation, scale); the pour photo takes over at 24.4,19.2 / 52deg / 0.8
-const keys=[{q:0,x:50,y:66.4,r:0,s:1},{q:.2,x:50,y:66.4,r:0,s:1},{q:.31,x:44,y:40,r:12,s:.93},{q:.44,x:24.4,y:19.2,r:52,s:.8},{q:.72,x:24.4,y:19.2,r:52,s:.8},{q:.86,x:78,y:22,r:18,s:.74},{q:1,x:79,y:24,r:14,s:.74}];
-function pose(q){let i=0;while(i<keys.length-2&&q>keys[i+1].q)i++;const a=keys[i],b=keys[i+1],t=ease(clamp((q-a.q)/(b.q-a.q)));return{x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),r:lerp(a.r,b.r,t),s:lerp(a.s,b.s,t)}}
 let lastStep=-1,lastE=-1;
 function setStep(list,i,prev){if(i===prev)return i;list.forEach((s,k)=>s.classList.toggle('on',k===i));return i}
 
 function frame(){
-  const W=innerWidth,H=innerHeight,wide=W>820;
+  const y=scrollY,W=L.W,H=L.H,wide=W>820;
   /* hero */
-  const ph=P(hero);
-  $('#heroCv').style.transform=`scale(${(1+ease(ph)*.22).toFixed(4)})`;
-  $('#heroMark').style.transform=`translateY(${-ph*90}px) scale(${1-ph*.08})`;
-  $('#heroMark').style.opacity=1-sm(ph,.15,.6);
-  $('#heroShade').style.opacity=sm(ph,.55,1);
-  $('#cue').style.opacity=.85*(1-sm(ph,0,.1));
-
-  /* brass */
-  const pb=P(brass);
-  const lift=sm(pb,.05,.2);
-  const dripH=$('#drips').getBoundingClientRect().height/($('#drips')._sy||1);
-  $('#dark').style.transform=`translate3d(0,${-lift*(H+dripH*1.7+40)}px,0)`;
-  $('#drips').style.transform=`scaleY(${1+lift*.7})`;
-  $('#titleL').style.transform=`translate3d(0,${-lift*(H*.9)}px,0)`;$('#titleL').style.opacity=1-sm(pb,.12,.19);
-  // photo holds through the title, pushes in on the foam, then hands over to the 3D brass
-  const ph2=sm(pb,0,.1),hand=sm(pb,.08,.15);
-  const phEl=$('#photo');phEl.style.opacity=(1-hand).toFixed(3);
-  phEl.style.transform=`translate(-50%,-50%) translateY(${(lift*6).toFixed(2)}vh) scale(${(1+ph2*.08+hand*.25).toFixed(3)})`;
-  phEl.style.filter=`blur(${(hand*6).toFixed(1)}px)`;
-  $('#stage').style.opacity=sm(pb,.15,.21).toFixed(3);$('#drips')._sy=1+lift*.7;
-  const shift=sm(pb,.12,.26);
-  const sx=wide?shift*W*.2:0,sy=wide?0:shift*H*.04,ss=wide?1-shift*.04:1-shift*.12;
-  $('#stage').style.transform=`translate(calc(-50% + ${sx}px),${sy}px) scale(${ss})`;
-  $('#stage').style.transformOrigin='50% 100%';
-  const rit=sm(pb,.18,.25);$('#ritual').style.opacity=rit;$('#ritBg').style.opacity=sm(pb,.12,.18).toFixed(3);
-  const q=clamp((pb-.22)/.76);
-  const si=q<.22?0:q<.47?1:q<.74?2:3;lastStep=setStep(steps,si,lastStep);
-  $('#cnt').textContent='0'+(si+1);$('#barFill').style.width=(q*100)+'%';
-  drawFilm(Math.round(filmTime(q)*12));
-
-  /* pack */
-  const pp=P(pack),pr=pack.getBoundingClientRect();
-  $('#packHead').style.opacity=1;$('#packHead').style.transform=`translateY(${((1-ease(clamp((pp-.08)/.32)))*26).toFixed(2)}vh)`;
-  const rise=ease(clamp((pp-.12)/.4));
-  $('#pouch').style.transform=`translateX(-50%) translateY(${((1-rise)*75).toFixed(2)}vh) rotate(${((1-rise)*-9).toFixed(2)}deg)`;
-  const nt=sm(pp,.42,.58);['#notesL','#notesR'].forEach((s,k)=>{const n=$(s);n.style.opacity=nt;n.style.transform=`translateX(${(1-nt)*(k?24:-24)}px)`});
-  for(const b of beans){
-    const drift=(1-sm(pp,0,.3))*-28+Math.sin(b.ph+pp*9)*2;
-    const t=clamp((pp-b.delay)/.3),tt=t*t;
-    const x=lerp(b.sx,b.ex,ease(t))/100*W,y=(lerp(b.sy+drift,b.ey,tt))/100*H;
-    b.el.style.transform=`translate3d(${(x-b.size/2).toFixed(1)}px,${(y-b.size*.7).toFixed(1)}px,0) rotate(${(b.r0+b.r1*t).toFixed(1)}deg)`;
+  if(near(L.hero,y)){
+    const ph=prog(L.hero,y);
+    st(E.heroCv,'transform',`scale(${(1+ease(ph)*.22).toFixed(4)})`);
+    st(E.heroMark,'transform',`translateY(${(-ph*90).toFixed(1)}px) scale(${f3(1-ph*.08)})`);
+    st(E.heroMark,'opacity',f3(1-sm(ph,.15,.6)));
+    st(E.heroShade,'opacity',f3(sm(ph,.55,1)));
+    st(E.cue,'opacity',f3(.85*(1-sm(ph,0,.1))));
   }
-
+  /* brass */
+  if(near(L.brass,y)){
+    const pb=prog(L.brass,y);
+    const lift=sm(pb,.05,.2);
+    st(E.dark,'transform',`translate3d(0,${(-lift*(H+L.dripH*1.7+40)).toFixed(1)}px,0)`);
+    st(E.drips,'transform',`scaleY(${f3(1+lift*.7)})`);E.drips._sy=1+lift*.7;
+    st(E.titleL,'transform',`translate3d(0,${(-lift*(H*.9)).toFixed(1)}px,0)`);st(E.titleL,'opacity',f3(1-sm(pb,.12,.19)));
+    const ph2=sm(pb,0,.1),hand=sm(pb,.08,.15);
+    st(E.photo,'opacity',f3(1-hand));
+    st(E.photo,'visibility',hand>=1?'hidden':'visible');
+    st(E.photo,'transform',`translate(-50%,-50%) translateY(${(lift*6).toFixed(2)}vh) scale(${f3(1+ph2*.08+hand*.25)})`);
+    st(E.photo,'filter',hand>0&&hand<1?`blur(${(hand*6).toFixed(1)}px)`:'none');
+    st(E.stage,'opacity',f3(sm(pb,.15,.21)));
+    const shift=sm(pb,.12,.26);
+    const sx=wide?shift*W*.2:0,sy=wide?0:shift*H*.04,ss=wide?1-shift*.04:1-shift*.12;
+    st(E.stage,'transform',`translate(calc(-50% + ${sx.toFixed(1)}px),${sy.toFixed(1)}px) scale(${f3(ss)})`);
+    st(E.ritual,'opacity',f3(sm(pb,.18,.25)));st(E.ritBg,'opacity',f3(sm(pb,.12,.18)));
+    const q=clamp((pb-.22)/.76);
+    const si=q<.22?0:q<.47?1:q<.74?2:3;
+    if(si!==lastStep){labels.forEach((l,k)=>l.classList.toggle('on',k<=si));E.cnt.textContent='0'+(si+1)}
+    lastStep=setStep(steps,si,lastStep);
+    st(E.barFill,'width',(q*100).toFixed(2)+'%');
+    if(pb>.12)drawFilm(Math.round(filmTime(q)*12));
+  }
+  /* pack */
+  if(near(L.pack,y)){
+    const pp=prog(L.pack,y);
+    st(E.packHead,'transform',`translateY(${((1-ease(clamp((pp-.08)/.32)))*26).toFixed(2)}vh)`);
+    const rise=ease(clamp((pp-.12)/.4));
+    st(E.pouch,'transform',`translateX(-50%) translateY(${((1-rise)*75).toFixed(2)}vh) rotate(${((1-rise)*-9).toFixed(2)}deg)`);
+    if(wide){const nt=sm(pp,.42,.58);[E.notesL,E.notesR].forEach((n,k)=>{st(n,'opacity',f3(nt));st(n,'transform',`translateX(${((1-nt)*(k?24:-24)).toFixed(1)}px)`)})}
+    for(const b of beans){
+      const drift=(1-sm(pp,0,.3))*-28+Math.sin(b.ph+pp*9)*2;
+      const t=clamp((pp-b.delay)/.3),tt=t*t;
+      const x=lerp(b.sx,b.ex,ease(t))/100*W,yy=(lerp(b.sy+drift,b.ey,tt))/100*H;
+      st(b.el,'transform',`translate3d(${(x-b.size/2).toFixed(1)}px,${(yy-b.size*.7).toFixed(1)}px,0) rotate(${(b.r0+b.r1*t).toFixed(1)}deg)`);
+    }
+  }
   /* estate */
-  const pe=P(estate);
-  const e=ease(clamp((pe-.03)/.27));
-  const w0=Math.min(W*.26,330)*(wide?1:1.7),top0=H*.52,h0=H-top0;
-  const ins=v=>(v*(1-e)).toFixed(1);
-  const rad=(w0/2*(1-e)).toFixed(1);
-  $('#win').style.clipPath=`inset(${ins(top0)}px ${ins((W-w0)/2)}px ${ins(Math.max(0,H-top0-h0))}px ${ins((W-w0)/2)}px round ${rad}px ${rad}px 0 0)`;
-  $('#eTitle').style.opacity=1-sm(pe,.1,.24);$('#eTitle').style.transform=`translateY(${-e*70}px)`;
-  const sp=clamp((pe-.32)/.66),ei=sp<.3?0:sp<.63?1:2;
-  lastE=setStep(esteps,ei,lastE);$('#ecnt').textContent='0'+(ei+1);
-  const show=sm(pe,.28,.36);$('#esteps').style.opacity=show;$('#ecount').style.opacity=show*.85;$('#badge').style.opacity=show;
-  $('#floor').style.opacity=sm(pe,.15,.35);
-  $('#estCv').style.transform=`scale(${(1.3-.26*e+sp*.08).toFixed(4)})`;
-  $('#warm').style.opacity=(sm(sp,.25,.5)*.7+sm(sp,.66,.9)*.3).toFixed(3);
-  $('#badgeSvg').style.transform=`rotate(${(pe*420).toFixed(1)}deg)`;
-  // scene cards rise, then open to full screen
-  [['#x1',.2],['#x2',.53]].forEach(([id,at])=>{
-    const el=$(id),up=ease(clamp((sp-at)/.08)),open=ease(clamp((sp-at-.08)/.12));
-    const cw=Math.min(W*.22,300)*(wide?1:1.8),ch=cw*1.3,cx=(W-cw)/2,cyTop=H*.5-ch/2+(1-up)*H*.6;
-    const t=cyTop*(1-open),l=cx*(1-open),bt=Math.max(0,H-cyTop-ch)*(1-open),rd=10*(1-open);
-    el.style.clipPath=up<=0?'inset(100% 50% 0 50%)':`inset(${t.toFixed(1)}px ${l.toFixed(1)}px ${bt.toFixed(1)}px ${l.toFixed(1)}px round ${rd.toFixed(1)}px)`;
-    el.querySelector('canvas').style.transform=`scale(${(1.25-.25*open).toFixed(3)})`;
-  });
-
-  /* header */
-  const tones=[[hero,'light'],[brass,'light'],[pack,'dark'],[estate,'light']];let tone='light',active=null;
-  for(const [el,t] of tones){const r=el.getBoundingClientRect();if(r.top<=40&&r.bottom>40){tone=t;active=el.id}}
-  if(document.querySelector('footer').getBoundingClientRect().top<=40){tone='light';active=null}
-  $('#top').classList.toggle('ink',tone==='dark');
-  document.querySelectorAll('.top nav a').forEach(a=>a.classList.toggle('on',a.dataset.k===active));
+  if(near(L.estate,y)){
+    const pe=prog(L.estate,y);
+    const e=ease(clamp((pe-.03)/.27));
+    const w0=Math.min(W*.26,330)*(wide?1:1.7),top0=H*.52,h0=H-top0;
+    const ins=v=>(v*(1-e)).toFixed(1);
+    const rad=(w0/2*(1-e)).toFixed(1);
+    st(E.win,'clipPath',e>=1?'none':`inset(${ins(top0)}px ${ins((W-w0)/2)}px ${ins(Math.max(0,H-top0-h0))}px ${ins((W-w0)/2)}px round ${rad}px ${rad}px 0 0)`);
+    st(E.eTitle,'opacity',f3(1-sm(pe,.1,.24)));st(E.eTitle,'transform',`translateY(${(-e*70).toFixed(1)}px)`);
+    const sp=clamp((pe-.32)/.66),ei=sp<.3?0:sp<.63?1:2;
+    if(ei!==lastE)E.ecnt.textContent='0'+(ei+1);
+    lastE=setStep(esteps,ei,lastE);
+    const show=f3(sm(pe,.28,.36));st(E.esteps,'opacity',show);st(E.ecount,'opacity',f3(show*.85));st(E.badge,'opacity',show);
+    st(E.floor,'opacity',f3(sm(pe,.15,.35)));
+    st(E.estCv,'transform',`scale(${(1.3-.26*e+sp*.08).toFixed(4)})`);
+    st(E.warm,'opacity',f3(sm(sp,.25,.5)*.7+sm(sp,.66,.9)*.3));
+    st(E.badgeSvg,'transform',`rotate(${(pe*420).toFixed(1)}deg)`);
+    [[E.x1,E.x1c,.2],[E.x2,E.x2c,.53]].forEach(([el,cv,at])=>{
+      const up=ease(clamp((sp-at)/.08)),open=ease(clamp((sp-at-.08)/.12));
+      const cw=Math.min(W*.22,300)*(wide?1:1.8),ch=cw*1.3,cx=(W-cw)/2,cyTop=H*.5-ch/2+(1-up)*H*.6;
+      const t=cyTop*(1-open),l=cx*(1-open),bt=Math.max(0,H-cyTop-ch)*(1-open),rd=10*(1-open);
+      st(el,'clipPath',up<=0?'inset(100% 50% 0 50%)':open>=1?'none':`inset(${t.toFixed(1)}px ${l.toFixed(1)}px ${bt.toFixed(1)}px ${l.toFixed(1)}px round ${rd.toFixed(1)}px)`);
+      if(up>0)st(cv,'transform',`scale(${f3(1.25-.25*open)})`);
+    });
+  }
+  /* header (from cached offsets, no layout reads) */
+  const yy=y+40;let tone='light',active=null;
+  for(const [k,sec,t] of [['hero',L.hero,'light'],['brass',L.brass,'light'],['pack',L.pack,'dark'],['estate',L.estate,'light']])
+    if(sec.top<=yy&&sec.top+sec.h>yy){tone=t;active=k}
+  if(L.foot<=yy){tone='light';active=null}
+  E.top.classList.toggle('ink',tone==='dark');
+  if(active!==frame._act){frame._act=active;navLinks.forEach(a=>a.classList.toggle('on',a.dataset.k===active))}
 }
 let ticking=false;
 function req(){if(!ticking){ticking=true;requestAnimationFrame(()=>{ticking=false;frame()})}}
 addEventListener('scroll',req,{passive:true});
-let rt;addEventListener('resize',()=>{req();clearTimeout(rt);rt=setTimeout(paintAll,250)});
-
-
+// Phones fire resize whenever the address bar shows or hides while scrolling.
+// Only re-measure then; repaint the painted scenes only on a real width change or a big height change.
+let rt,pW=innerWidth,pH=innerHeight;
+addEventListener('resize',()=>{measure();req();clearTimeout(rt);rt=setTimeout(()=>{
+  if(innerWidth!==pW||Math.abs(innerHeight-pH)>160){pW=innerWidth;pH=innerHeight;paintAll();measure();req()}},250)});
+addEventListener('load',()=>{measure();req()});
 
 window.__filmImgs=filmImgs;
-function start(){paintAll();frame()}
+function start(){measure();paintAll();frame()}
 
 /* ---------- premium: loader, intro, smooth scroll, cursor, marquee, reveals ---------- */
 (function(){
@@ -754,13 +792,17 @@ function start(){paintAll();frame()}
   }
   // marquee: drifts, speeds up with scroll
   const mq=document.getElementById('mq');let mx2=0,lastY=scrollY,vel=0;
-  (function m(){const y=scrollY;vel+=((y-lastY)-vel)*.1;lastY=y;mx2-=(reduceM?0:.6)+Math.abs(vel)*.25;const w=mq.firstElementChild.offsetWidth;if(-mx2>w)mx2+=w;mq.style.transform=`translate3d(${mx2}px,0,0)`;requestAnimationFrame(m)})();
+  // runs only while the marquee is on screen; width measured once, not every frame
+  let mqW=mq.firstElementChild.offsetWidth,mqOn=false,mqRaf=0;
+  addEventListener('resize',()=>{mqW=mq.firstElementChild.offsetWidth});
+  function m(){const y=scrollY;vel+=((y-lastY)-vel)*.1;lastY=y;mx2-=(reduceM?0:.6)+Math.abs(vel)*.25;if(-mx2>mqW)mx2+=mqW;mq.style.transform=`translate3d(${mx2.toFixed(1)}px,0,0)`;mqRaf=mqOn?requestAnimationFrame(m):0}
+  new IntersectionObserver(es=>{mqOn=es[0].isIntersecting;if(mqOn&&!mqRaf){lastY=scrollY;mqW=mq.firstElementChild.offsetWidth;mqRaf=requestAnimationFrame(m)}}).observe(mq.parentElement);
   // reveal on view
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.2});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 })();
 
-if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>frame());
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{measure();frame()});
 start();
 })();
 </script>
